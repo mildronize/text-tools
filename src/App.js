@@ -1,82 +1,69 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
-
+import ConversionActions from './components/ConversionActions';
+// Style
 import 'bootstrap/dist/css/bootstrap.css';
+// Redux
+import { convert, setOutput } from './actions';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import _ from 'lodash';
 
-class App extends Component {
+function makeTitle(conversionType){
+  return  _.capitalize((_.lowerCase(conversionType)));
+}
+
+class App extends React.Component {
 
   state = {
     input: "",
     output: "",
-    convertState: "Upper Case"
+    title: makeTitle(this.props.conversionType)
   }
 
-  convert(input, text){
-    console.log(input.toUpperCase());
-    switch(text) {
-      case "Upper Case":
-        return input.toUpperCase()
-      default:
-        return new Error();
-    }
-    
-  }
-
-  handleButton(text){
-    this.setState({convertState: text})
-  }
-
-  handleInput(event){
-    this.setState({ input: event.target.value });
-
-    this.setState( (prevState) => ({
-      output: this.convert(prevState.input, prevState.convertState)
-    }));
-
+  handleInput(event) {
+    const input = event.target.value;
+    this.setState({ input });
+    const output = convert(this.props.conversionType, input);
+    this.props.setOutput(output);
+    this.setState({ 
+      title: makeTitle(this.props.conversionType)
+     });
   }
 
   render() {
+    const { output } = this.props;
     return (
       <div className="container">
-        <h1>Text Tools</h1>
+        <h1>Text Tools: {this.state.title}</h1>
         <div className="text-muted">Case conversion tools for naming</div>
         <div className="mb-4"></div>
 
         <div className="form-group">
           <label htmlFor="InputText">Input</label>
-          <input 
+          <input
             autoFocus
-            type="text" 
-            className="form-control" 
-            id="InputText" 
-            placeholder="Input" 
+            type="text"
+            className="form-control"
+            id="InputText"
+            placeholder="Input"
             value={this.state.input}
-            onChange={(e)=> this.handleInput(e)}
-            />
+            onChange={(e) => this.handleInput(e)}
+          />
         </div>
-        <hr/>
-        <button
-          className="btn btn-dark mr-2"
-          onClick={()=> this.handleButton("Upper Case")}
-          >
-          Upper Case
-        </button>
-        <button
-          className="btn btn-dark mr-2" disabled
-          onClick={()=> this.handleButton("Lower Case")}
-          >
-          Lower Case
-        </button>
-        <hr/>
+        <hr />
+
+        <ConversionActions input={this.state.input} />
+
+        <hr />
         <div className="form-group">
           <label htmlFor="OutputText">Output</label>
-          <input 
-            type="text" 
-            className="form-control" 
-            id="OutputText" 
+          <input
+            type="text"
+            className="form-control"
+            id="OutputText"
             placeholder="Output"
-            value={this.state.output} />
+            value={output} />
         </div>
 
       </div>
@@ -84,4 +71,13 @@ class App extends Component {
   }
 }
 
-export default App;
+const mapStateToProps = (state) => ({
+  conversionType: state.conversionType,
+  output: state.output
+})
+
+const mapDispatchToProps = (dispatch) => (
+  bindActionCreators({ convert, setOutput }, dispatch)
+)
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
