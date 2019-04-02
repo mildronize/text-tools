@@ -8,8 +8,9 @@ import store from './reducer.js'
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 
-const storeObj = createStore(store,
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+const storeObj = process.env.NODE_ENV === 'production' ?  
+    createStore(store) : 
+    createStore(store, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 ReactDOM.render(
     <Provider store={storeObj}>
